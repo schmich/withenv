@@ -5,11 +5,12 @@ Vagrant.configure('2') do |config|
   config.vm.hostname = 'withenv'
 
   config.vm.provision 'shell', inline: <<-SCRIPT
-		curl -Ls https://dl.google.com/go/go1.14.2.linux-amd64.tar.gz | sudo tar -C /usr/local -xz
+    sudo yum install -y git
+    curl -Ls https://dl.google.com/go/go1.14.2.linux-amd64.tar.gz | sudo tar -C /usr/local -xz
 
-		echo >> ~vagrant/.bashrc
-		echo 'export PATH=$PATH:/usr/local/go/bin' >> ~vagrant/.bashrc
-		echo 'cd /withenv' >> ~vagrant/.bashrc
+    echo >> ~vagrant/.bashrc
+    echo 'export PATH=$PATH:/usr/local/go/bin' >> ~vagrant/.bashrc
+    echo 'cd /withenv' >> ~vagrant/.bashrc
 SCRIPT
 
   config.vm.provider 'virtualbox' do |vb|
