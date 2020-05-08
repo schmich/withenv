@@ -108,7 +108,7 @@ func mergeEnv(current map[string]string, overlay map[string]string) map[string]s
 }
 
 func main() {
-	app := cli.App("withenv", "Run command with environment from file.")
+	app := cli.App("withenv", "Run command with environment from file - https://github.com/schmich/withenv")
 
 	app.Spec = "ENVFILE [COMMAND [-- ARGS...]]"
 
