@@ -4,7 +4,7 @@
 
 ## Install
 
-[Download the zero-install binary](https://github.com/schmich/withenv/releases) to a directory on your `PATH`.
+[Download the zero-install binary](https://github.com/schmich/withenv/releases/latest/download/withenv-linux-x64) to a directory on your `PATH`.
 
 ## Usage
 
