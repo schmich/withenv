@@ -69,10 +69,10 @@ func loadEnv(filename string) (map[string]string, error) {
 	return env, nil
 }
 
-func sliceToMap(environ []string) map[string]string {
+func toMap(entries []string) map[string]string {
 	env := make(map[string]string)
 
-	for _, entry := range environ {
+	for _, entry := range entries {
 		pair := strings.SplitN(entry, "=", 2)
 		name := pair[0]
 		value := pair[1]
@@ -82,15 +82,15 @@ func sliceToMap(environ []string) map[string]string {
 	return env
 }
 
-func mapToSlice(env map[string]string) []string {
-	environ := []string{}
+func toEntries(env map[string]string) []string {
+	entries := []string{}
 
 	for name, value := range env {
 		entry := name + "=" + value
-		environ = append(environ, entry)
+		entries = append(entries, entry)
 	}
 
-	return environ
+	return entries
 }
 
 func mergeEnv(current map[string]string, overlay map[string]string) map[string]string {
@@ -108,40 +108,45 @@ func mergeEnv(current map[string]string, overlay map[string]string) map[string]s
 }
 
 func main() {
-	app := cli.App("withenv", "Run command with environment from file - https://github.com/schmich/withenv")
+	app := cli.App("withenv", "Run a command with environment from file - https://github.com/schmich/withenv")
 
-	app.Spec = "ENVFILE [COMMAND [-- ARGS...]]"
+	app.Spec = "-f=<envfile>... [COMMAND [-- ARGS...]]"
 
 	app.Version("v version", "withenv "+version+" "+commit)
 
-	envFile := app.StringArg("ENVFILE", "", "Environment file containing NAME=VALUE entries.")
+	envfiles := app.StringsOpt("f file", []string{}, "Environment file containing NAME=VALUE entries.")
 	cmd := app.StringArg("COMMAND", "", "Command to run.")
 	_ = app.StringsArg("ARGS", nil, "Arguments to pass to command.")
 
 	app.Action = func() {
-		current := sliceToMap(os.Environ())
+		combined := toMap(os.Environ())
 
-		overlay, err := loadEnv(*envFile)
-		if err != nil {
-			log.Fatal(err)
+		for _, envfile := range *envfiles {
+			overlay, err := loadEnv(envfile)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			combined = mergeEnv(combined, overlay)
 		}
 
-		env := mapToSlice(mergeEnv(current, overlay))
+		env := toEntries(combined)
 
 		if *cmd == "" {
 			for _, entry := range env {
 				fmt.Println(entry)
 			}
-		} else {
-			command, err := exec.LookPath(*cmd)
-			if err != nil {
-				log.Fatal(err)
-			}
+			return
+		}
 
-			args := os.Args[2:]
-			if err := syscall.Exec(command, args, env); err != nil {
-				log.Fatal(err)
-			}
+		command, err := exec.LookPath(*cmd)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		args := os.Args[2*len(*envfiles)+1:]
+		if err := syscall.Exec(command, args, env); err != nil {
+			log.Fatal(err)
 		}
 	}
 
