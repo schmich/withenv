@@ -24,17 +24,24 @@ func init() {
 }
 
 func loadEnv(filename string) (map[string]string, error) {
-	filename, err := filepath.Abs(filename)
-	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("failed to get absolute path for %s", filename))
-	}
+	var err error
+	var file *os.File
 
-	file, err := os.Open(filename)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to open environment file")
-	}
+	if filename == "-" {
+		file = os.Stdin
+	} else {
+		filename, err = filepath.Abs(filename)
+		if err != nil {
+			return nil, errors.Wrap(err, fmt.Sprintf("failed to get absolute path for %s", filename))
+		}
 
-	defer file.Close()
+		file, err = os.Open(filename)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to open environment file")
+		}
+
+		defer file.Close()
+	}
 
 	entry := regexp.MustCompile(`(?i)^([a-z_][a-z0-9_]*)=(.*)$`)
 	ignored := regexp.MustCompile(`(^\s*$)|(^#.*$)`)
