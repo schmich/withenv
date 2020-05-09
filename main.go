@@ -140,10 +140,8 @@ func main() {
 			var merge map[string]string
 			if source == "@" {
 				merge = current
-			} else {
-				if merge, err = loadEnv(source); err != nil {
-					log.Fatal(err)
-				}
+			} else if merge, err = loadEnv(source); err != nil {
+				log.Fatal(err)
 			}
 
 			combined = mergeEnv(combined, merge)
