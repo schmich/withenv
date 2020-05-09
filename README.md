@@ -9,7 +9,7 @@
 ## Usage
 
 ```
-Usage: withenv [--clear] --env=<file|@|->... [COMMAND [-- ARGS...]]
+Usage: withenv [--clear] [--env=<file|@|->...] [COMMAND [-- ARGS...]]
 
 Run a command with environment from files - https://github.com/schmich/withenv
 
@@ -133,6 +133,12 @@ $ withenv -c -e .env1 -e @
 SHELL=/bin/bash
 SOURCE=current
 COLOR=blue
+```
+
+**Example:** Run command with empty environment:
+
+```bash
+$ withenv -c /bin/ls
 ```
 
 **Example:** Run a complex command with a merged environment:
