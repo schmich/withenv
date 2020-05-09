@@ -117,21 +117,28 @@ func mergeEnv(current map[string]string, overlay map[string]string) map[string]s
 func main() {
 	app := cli.App("withenv", "Run a command with environment from file - https://github.com/schmich/withenv")
 
-	app.Spec = "-f=<envfile>... [COMMAND [-- ARGS...]]"
+	app.Spec = "-e=<file|@|->... [COMMAND [-- ARGS...]]"
 
 	app.Version("v version", "withenv "+version+" "+commit)
 
-	envfiles := app.StringsOpt("f file", []string{}, "Environment file containing NAME=VALUE entries.")
+	sources := app.StringsOpt("e env", []string{}, "Environment file containing NAME=VALUE entries.\nUse -e- to read from stdin.\nUse -e @ to read current environment.")
 	cmd := app.StringArg("COMMAND", "", "Command to run.")
-	_ = app.StringsArg("ARGS", nil, "Arguments to pass to command.")
+	args := app.StringsArg("ARGS", []string{}, "Arguments to pass to command.")
 
 	app.Action = func() {
-		combined := toMap(os.Environ())
+		var err error
 
-		for _, envfile := range *envfiles {
-			overlay, err := loadEnv(envfile)
-			if err != nil {
-				log.Fatal(err)
+		current := toMap(os.Environ())
+		combined := mergeEnv(map[string]string{}, current)
+
+		for _, source := range *sources {
+			var overlay map[string]string
+			if source == "@" {
+				overlay = current
+			} else {
+				if overlay, err = loadEnv(source); err != nil {
+					log.Fatal(err)
+				}
 			}
 
 			combined = mergeEnv(combined, overlay)
