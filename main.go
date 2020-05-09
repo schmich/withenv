@@ -151,8 +151,9 @@ func main() {
 			log.Fatal(err)
 		}
 
-		args := os.Args[2*len(*envfiles)+1:]
-		if err := syscall.Exec(command, args, env); err != nil {
+		arguments := append([]string{command}, *args...)
+
+		if err = syscall.Exec(command, arguments, env); err != nil {
 			log.Fatal(err)
 		}
 	}
