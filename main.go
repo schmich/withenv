@@ -164,7 +164,7 @@ func main() {
 		arguments := append([]string{command}, *args...)
 
 		if err = syscall.Exec(command, arguments, env); err != nil {
-			log.Fatal(err)
+			log.Fatalf("cannot execute %s: %v", command, err)
 		}
 	}
 
